@@ -1750,6 +1750,7 @@ impl<'a> VMLogic<'a> {
         self.gas_counter.pay_base(base)?;
         self.check_can_add_a_log_message()?;
         let message = self.get_utf8_string(len, ptr)?;
+        println!("LOG {}", message);
         self.gas_counter.pay_base(log_base)?;
         self.gas_counter.pay_per_byte(log_byte, message.len() as u64)?;
         self.checked_push_log(message)
@@ -1869,6 +1870,7 @@ impl<'a> VMLogic<'a> {
         value_ptr: u64,
         register_id: u64,
     ) -> Result<u64> {
+        println!("CALLED storage_write {} {} {} {} {}", key_len, key_ptr, value_len, value_ptr, register_id);
         self.gas_counter.pay_base(base)?;
         if self.context.is_view {
             return Err(
