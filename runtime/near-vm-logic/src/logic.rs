@@ -2033,17 +2033,12 @@ impl<'a> VMLogic<'a> {
         self.ext.storage_remove(&key)?;
         self.gas_counter
             .pay_per_byte(touching_trie_node, self.ext.get_touched_nodes_count() - nodes_before)?;
-        let storage_config = &self.fees_config.storage_usage_config;
         match removed {
             Some(value) => {
                 // Inner value can't overflow, because the key/value length is limited.
                 self.current_storage_usage = self
                     .current_storage_usage
-                    .checked_sub(
-                        value.len() as u64
-                            + key.len() as u64
-                            + storage_config.num_extra_bytes_record,
-                    )
+                    .checked_sub(value.len() as u64)
                     .ok_or(InconsistentStateError::IntegerOverflow)?;
                 self.internal_write_register(register_id, value)?;
                 Ok(1)
