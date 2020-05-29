@@ -1099,6 +1099,7 @@ impl ClientActor {
                     StateSyncResult::Unchanged => (),
                     StateSyncResult::Changed(fetch_block) => {
                         self.client.sync_status = SyncStatus::StateSync(sync_hash, new_shard_sync);
+                        debug!(target: "sync", "sync hash: {}", sync_hash);
                         if fetch_block {
                             if let Some(peer_info) =
                                 highest_height_peer(&self.network_info.highest_height_peers)
