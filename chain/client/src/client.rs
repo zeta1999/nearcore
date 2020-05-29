@@ -1311,6 +1311,7 @@ impl Client {
                     let accepted_blocks = Arc::new(RwLock::new(vec![]));
                     let blocks_missing_chunks = Arc::new(RwLock::new(vec![]));
                     let challenges = Arc::new(RwLock::new(vec![]));
+                    self.chain.runtime_adapter.get_tries().clear_all_caches();
 
                     self.chain.catchup_blocks(
                         me,

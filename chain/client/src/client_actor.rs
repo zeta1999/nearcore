@@ -1120,6 +1120,7 @@ impl ClientActor {
                     }
                     StateSyncResult::Completed => {
                         info!(target: "sync", "State sync: all shards are done");
+                        self.client.chain.runtime_adapter.get_tries().clear_all_caches();
 
                         let accepted_blocks = Arc::new(RwLock::new(vec![]));
                         let blocks_missing_chunks = Arc::new(RwLock::new(vec![]));

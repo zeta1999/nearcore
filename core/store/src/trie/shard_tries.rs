@@ -3,6 +3,7 @@ use crate::trie::encode_trie_node_with_rc;
 use crate::trie::trie_storage::TrieCachingStorage;
 use crate::{StorageError, Store, StoreUpdate, Trie, TrieChanges, TrieUpdate};
 use borsh::BorshSerialize;
+use cached::Cached;
 use near_primitives::hash::CryptoHash;
 use near_primitives::trie_key::TrieKey;
 use near_primitives::types::{
@@ -25,6 +26,13 @@ impl ShardTries {
                 .collect::<Vec<_>>(),
         );
         ShardTries { tries }
+    }
+
+    pub fn clear_all_caches(&self) {
+        for trie in self.tries.iter() {
+            let storage = trie.storage.as_caching_storage().expect("Always caching storage");
+            storage.cache.lock().unwrap().cache_clear();
+        }
     }
 
     pub fn new_trie_update(&self, shard_id: ShardId, state_root: CryptoHash) -> TrieUpdate {
