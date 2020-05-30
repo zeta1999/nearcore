@@ -7,9 +7,9 @@ use log::info;
 use tracing::trace;
 
 use near_chain::ChainGenesis;
-use near_client::{ClientActor, ViewClientActor};
+use near_client::{start_client, start_view_client, ClientActor, ViewClientActor};
 use near_jsonrpc::start_http;
-use near_network::{NetworkRecipient, PeerManagerActor};
+use near_network::{start_network, NetworkRecipient};
 use near_store::{create_store, get_store_version, set_store_version, Store};
 use near_telemetry::TelemetryActor;
 
@@ -76,6 +76,7 @@ pub fn start_with_config(
 ) -> (Addr<ClientActor>, Addr<ViewClientActor>) {
     let store = init_and_migrate_store(home_dir);
     near_actix_utils::init_stop_on_panic();
+
     let runtime = Arc::new(NightshadeRuntime::new(
         home_dir,
         Arc::clone(&store),
@@ -89,17 +90,14 @@ pub fn start_with_config(
 
     let node_id = config.network_config.public_key.clone().into();
     let network_adapter = Arc::new(NetworkRecipient::new());
-    let view_client = ViewClientActor::new(
+    let view_client = start_view_client(
         config.validator_signer.as_ref().map(|signer| signer.validator_id().clone()),
-        &chain_genesis,
+        chain_genesis.clone(),
         runtime.clone(),
         network_adapter.clone(),
         config.client_config.clone(),
-    )
-    .unwrap()
-    .start();
-
-    let client_actor = ClientActor::new(
+    );
+    let client_actor = start_client(
         config.client_config,
         chain_genesis,
         runtime,
@@ -107,10 +105,7 @@ pub fn start_with_config(
         network_adapter.clone(),
         config.validator_signer,
         telemetry,
-        true,
-    )
-    .unwrap()
-    .start();
+    );
     start_http(
         config.rpc_config,
         Arc::clone(&config.genesis),
@@ -119,17 +114,13 @@ pub fn start_with_config(
     );
 
     config.network_config.verify();
-
-    let network_actor = PeerManagerActor::new(
+    start_network(
         store,
         config.network_config,
         client_actor.clone().recipient(),
         view_client.clone().recipient(),
-    )
-    .unwrap()
-    .start();
-
-    network_adapter.set_recipient(network_actor.recipient());
+        network_adapter,
+    );
 
     trace!(target: "diagnostic", key="log", "Starting NEAR node with diagnostic activated");
 
