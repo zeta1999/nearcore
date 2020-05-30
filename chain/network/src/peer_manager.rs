@@ -111,6 +111,8 @@ pub struct PeerManagerActor {
     /// Store all collected metrics from a node.
     #[cfg(feature = "metric_recorder")]
     metric_recorder: MetricRecorder,
+    /// Arbiter (e.g. separate thread) where all peers are operating.
+    peer_arbiter: Arbiter,
 }
 
 impl PeerManagerActor {
@@ -144,6 +146,7 @@ impl PeerManagerActor {
             network_metrics: NetworkMetrics::new(),
             #[cfg(feature = "metric_recorder")]
             metric_recorder,
+            peer_arbiter: Arbiter::new(),
         })
     }
 
