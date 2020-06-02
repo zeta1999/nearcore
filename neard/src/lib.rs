@@ -2,7 +2,7 @@ use std::fs;
 use std::path::Path;
 use std::sync::Arc;
 
-use actix::{Actor, Addr};
+use actix::{Actor, Addr, Arbiter};
 use log::info;
 use tracing::trace;
 
@@ -73,7 +73,7 @@ pub fn init_and_migrate_store(home_dir: &Path) -> Arc<Store> {
 pub fn start_with_config(
     home_dir: &Path,
     config: NearConfig,
-) -> (Addr<ClientActor>, Addr<ViewClientActor>) {
+) -> (Addr<ClientActor>, Addr<ViewClientActor>, Vec<Arbiter>) {
     let store = init_and_migrate_store(home_dir);
     near_actix_utils::init_stop_on_panic();
 
@@ -97,7 +97,7 @@ pub fn start_with_config(
         network_adapter.clone(),
         config.client_config.clone(),
     );
-    let client_actor = start_client(
+    let (client_actor, client_arbiter) = start_client(
         config.client_config,
         chain_genesis,
         runtime,
@@ -114,7 +114,7 @@ pub fn start_with_config(
     );
 
     config.network_config.verify();
-    start_network(
+    let network_arbiter = start_network(
         store,
         config.network_config,
         client_actor.clone().recipient(),
@@ -124,5 +124,5 @@ pub fn start_with_config(
 
     trace!(target: "diagnostic", key="log", "Starting NEAR node with diagnostic activated");
 
-    (client_actor, view_client)
+    (client_actor, view_client, vec![client_arbiter, network_arbiter])
 }
