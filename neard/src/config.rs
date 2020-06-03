@@ -269,7 +269,7 @@ fn default_gc_blocks_limit() -> NumBlocks {
 }
 
 fn default_view_client_threads() -> usize {
-    num_cpus::get()
+    4
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
