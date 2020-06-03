@@ -1066,7 +1066,7 @@ impl ClientActor {
                 _ => false,
             };
             if sync_state {
-                let (sync_hash, mut new_shard_sync, just_enter_state_sync) =
+                let (sync_hash, mut new_shard_sync, _just_enter_state_sync) =
                     match &self.client.sync_status {
                         SyncStatus::StateSync(sync_hash, shard_sync) => {
                             (sync_hash.clone(), shard_sync.clone(), false)
@@ -1089,7 +1089,7 @@ impl ClientActor {
                     })
                     .collect();
 
-                if !self.client.config.archive && just_enter_state_sync {
+                if !self.client.config.archive {
                     unwrap_or_run_later!(self.client.chain.reset_data_pre_state_sync(sync_hash));
                 }
 
