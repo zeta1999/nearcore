@@ -45,8 +45,15 @@ use crate::error::{Error, ErrorKind};
 use crate::types::{Block, BlockHeader, LatestKnown, ReceiptProofResponse, ReceiptResponse};
 
 /// lru cache size
+#[cfg(not(feature = "no_cache"))]
 const CACHE_SIZE: usize = 100;
+#[cfg(not(feature = "no_cache"))]
 const CHUNK_CACHE_SIZE: usize = 1024;
+
+#[cfg(feature = "no_cache")]
+const CACHE_SIZE: usize = 1;
+#[cfg(feature = "no_cache")]
+const CHUNK_CACHE_SIZE: usize = 1;
 
 #[derive(Debug, PartialEq, BorshSerialize, BorshDeserialize, Serialize)]
 pub struct ShardInfo(pub ShardId, pub ChunkHash);
