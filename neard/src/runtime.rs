@@ -1295,6 +1295,12 @@ impl RuntimeAdapter for NightshadeRuntime {
     ) -> Result<bool, Error> {
         let mut epoch_manager = self.epoch_manager.as_ref().write().expect(POISONED_LOCK_ERR);
         let head_epoch_id = epoch_manager.get_epoch_id(header_head)?;
+        debug!(
+            "MOO5 {:?} {:?} {:?}",
+            epoch_manager.get_epoch_id_from_prev_block(chunk_prev_block_hash)?,
+            epoch_manager.get_next_epoch_id_from_prev_block(chunk_prev_block_hash)?,
+            head_epoch_id
+        );
         Ok(epoch_manager.get_epoch_id_from_prev_block(chunk_prev_block_hash)? != head_epoch_id
             && epoch_manager.get_next_epoch_id_from_prev_block(chunk_prev_block_hash)?
                 != head_epoch_id)
